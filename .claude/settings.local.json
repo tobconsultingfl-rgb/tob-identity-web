@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:as-identity-api-develop-eastus2.azurewebsites.net)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
