@@ -1,7 +1,7 @@
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { apiConfig } from '../config/api';
-import { ApiError } from '../types';
+import type { ApiError } from '../types';
 
 export interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';

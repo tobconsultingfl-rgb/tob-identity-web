@@ -1,5 +1,5 @@
 import { BaseApiClient } from './base-api-client';
-import {
+import type {
   UserDto,
   CreateUserRequest,
   UpdateUserRequest,
@@ -19,7 +19,7 @@ export class UsersService {
   /**
    * Get users by licensee ID
    */
-  async getUsersByLicenseeId(licenseeId?: string): Promise<ApiResponse<UserDto[]>> {
+  async getUsersByTenantId(licenseeId?: string): Promise<ApiResponse<UserDto[]>> {
     const endpoint = licenseeId
       ? `/users?licenseeId=${encodeURIComponent(licenseeId)}`
       : '/users';

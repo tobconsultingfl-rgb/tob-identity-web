@@ -1,4 +1,4 @@
-import { RoleDto } from './role';
+import type { RoleDto } from './role';
 
 // User related types
 export interface UserDto {

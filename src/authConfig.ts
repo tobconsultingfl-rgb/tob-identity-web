@@ -1,10 +1,10 @@
-import { LogLevel } from '@azure/msal-browser';
+import { type Configuration, LogLevel, type PopupRequest } from '@azure/msal-browser';
 
-export const msalConfig = {
+export const msalConfig: Configuration = {
   auth: {
-    clientId: 'YOUR_CLIENT_ID_HERE', // Replace with your Azure AD application client ID
-    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID_HERE', // Replace with your tenant ID or common
-    redirectUri: 'http://localhost:3000', // Replace with your redirect URI
+    clientId: 'c70a71b7-033c-4a87-a3e1-521502ca7994', // Replace with your Azure AD application client ID
+    authority: 'https://tobconsultingfl.ciamlogin.com/82c3240a-fc69-499d-932c-65e6f2fae460', // Replace with your tenant ID or common
+    redirectUri: 'http://localhost:5173', // Replace with your redirect URI
   },
   cache: {
     cacheLocation: 'sessionStorage', // This configures where your cache will be stored
@@ -37,8 +37,8 @@ export const msalConfig = {
   }
 };
 
-export const loginRequest = {
-  scopes: ['User.Read'], // Add the scopes you need for your application
+export const loginRequest: PopupRequest = {
+  scopes: ['api://c44d41f2-9e2b-4b73-be56-e538a0013fcc/.default'], // Add the scopes you need for your application
 };
 
 export const graphConfig = {

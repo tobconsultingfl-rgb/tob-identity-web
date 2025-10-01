@@ -1,5 +1,5 @@
 import { BaseApiClient } from './base-api-client';
-import {
+import type {
   RoleDto,
   CreateUserRoleRequest,
   ApiResponse
