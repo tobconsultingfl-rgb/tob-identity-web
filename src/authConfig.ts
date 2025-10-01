@@ -38,7 +38,7 @@ export const msalConfig: Configuration = {
 };
 
 export const loginRequest: PopupRequest = {
-  scopes: ['api://c44d41f2-9e2b-4b73-be56-e538a0013fcc/.default'], // Add the scopes you need for your application
+  scopes: ['api://c44d41f2-9e2b-4b73-be56-e538a0013fcc/change.default'], // Add the scopes you need for your application
 };
 
 export const graphConfig = {

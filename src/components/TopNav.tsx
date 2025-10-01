@@ -3,6 +3,26 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../authConfig';
 import { useApiService } from '../services';
 import type { UserDto } from '../types';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Button,
+  Avatar,
+  Menu,
+  MenuItem,
+  Typography,
+  Divider,
+  CircularProgress,
+  IconButton
+} from '@mui/material';
+import {
+  KeyboardArrowDown as ArrowDownIcon,
+  Person as PersonIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+  Login as LoginIcon
+} from '@mui/icons-material';
 import tobLogo from '../assets/TOB_Consulting_Logo.png';
 
 export const TopNav: React.FC = () => {
@@ -10,7 +30,7 @@ export const TopNav: React.FC = () => {
   const isAuthenticated = useIsAuthenticated();
   const apiService = useApiService();
   const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
@@ -18,18 +38,6 @@ export const TopNav: React.FC = () => {
       loadCurrentUser();
     }
   }, [isAuthenticated]);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (showUserMenu && !target.closest('.user-section')) {
-        setShowUserMenu(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showUserMenu]);
 
   const loadCurrentUser = async () => {
     setLoading(true);
@@ -52,13 +60,17 @@ export const TopNav: React.FC = () => {
     instance.logoutPopup()
       .then(() => {
         setCurrentUser(null);
-        setShowUserMenu(false);
+        handleCloseMenu();
       })
       .catch(error => console.log(error));
   };
 
-  const toggleUserMenu = () => {
-    setShowUserMenu(!showUserMenu);
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
   };
 
   const getUserDisplayName = () => {
@@ -85,114 +97,123 @@ export const TopNav: React.FC = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-0">
-      <div className="container-fluid px-3 px-sm-4">
+    <AppBar position="static" color="default" elevation={1} sx={{ bgcolor: 'background.paper' }}>
+      <Toolbar sx={{ maxWidth: 'lg', width: '100%', mx: 'auto', px: { xs: 3, sm: 4 } }}>
         {/* Left side - Logo */}
-        <div className="navbar-brand p-0 m-0">
+        <Box sx={{ flexGrow: 1 }}>
           <img
             src={tobLogo}
             alt="TOB Consulting"
-            className="img-fluid"
             style={{
               height: 'clamp(120px, 24vw, 150px)',
+              objectFit: 'contain'
             }}
           />
-        </div>
+        </Box>
 
         {/* Right side - Authentication */}
-        <div className="navbar-nav ms-auto">
+        <Box>
           {isAuthenticated ? (
-            <div className="nav-item dropdown position-relative">
-              {loading ? (
-                <div className="d-flex align-items-center text-muted">
-                  <div className="spinner-border spinner-border-sm me-2" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                  <span className="d-none d-sm-inline">Loading...</span>
-                </div>
-              ) : (
-                <>
-                  <button
-                    className="btn btn-link nav-link d-flex align-items-center text-decoration-none p-2 rounded hover:bg-gray-50 transition-all border-0"
-                    onClick={toggleUserMenu}
-                    type="button"
-                    aria-expanded={showUserMenu}
-                    aria-haspopup="true"
+            loading ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                <CircularProgress size={16} sx={{ mr: 1 }} />
+                <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                  Loading...
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Button
+                  onClick={handleOpenMenu}
+                  endIcon={<ArrowDownIcon />}
+                  sx={{
+                    textTransform: 'none',
+                    color: 'text.primary',
+                    '&:hover': { bgcolor: 'action.hover' }
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: { xs: 28, sm: 32 },
+                      height: { xs: 28, sm: 32 },
+                      fontSize: 'clamp(0.65rem, 1.5vw, 0.75rem)',
+                      fontWeight: 600,
+                      mr: { xs: 0, lg: 2 }
+                    }}
                   >
-                    <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 me-sm-3"
-                         style={{
-                           width: 'clamp(28px, 6vw, 32px)',
-                           height: 'clamp(28px, 6vw, 32px)',
-                           fontSize: 'clamp(0.65rem, 1.5vw, 0.75rem)',
-                           fontWeight: '600'
-                         }}>
-                      {getUserInitials()}
-                    </div>
-                    <div className="d-none d-lg-flex flex-column text-start me-2">
-                      <span className="fw-medium text-dark" style={{ fontSize: 'clamp(0.8rem, 2vw, 0.875rem)' }}>
-                        {getUserDisplayName()}
-                      </span>
-                      {currentUser?.tenantName && (
-                        <span className="text-muted" style={{ fontSize: 'clamp(0.7rem, 1.5vw, 0.75rem)' }}>
-                          {currentUser.tenantName}
-                        </span>
-                      )}
-                    </div>
-                    <svg className={`transition-transform flex-shrink-0 ${showUserMenu ? 'rotate-180' : ''}`}
-                         width="12" height="8" viewBox="0 0 12 8">
-                      <path d="M1 1l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
-                    </svg>
-                  </button>
+                    {getUserInitials()}
+                  </Avatar>
+                  <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexDirection: 'column', alignItems: 'flex-start', mr: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 'clamp(0.8rem, 2vw, 0.875rem)' }}>
+                      {getUserDisplayName()}
+                    </Typography>
+                    {currentUser?.tenantName && (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'clamp(0.7rem, 1.5vw, 0.75rem)' }}>
+                        {currentUser.tenantName}
+                      </Typography>
+                    )}
+                  </Box>
+                </Button>
 
-                  {showUserMenu && (
-                    <div className="dropdown-menu show position-absolute end-0 mt-2 shadow-lg border-0 rounded-lg"
-                         style={{
-                           minWidth: 'clamp(200px, 50vw, 280px)',
-                           maxWidth: '95vw',
-                           zIndex: 1001
-                         }}>
-                      <div className="px-3 px-sm-4 py-3 border-bottom">
-                        <div className="fw-semibold text-dark mb-1 text-truncate">
-                          {getUserDisplayName()}
-                        </div>
-                        <div className="text-muted small mb-1 text-truncate">
-                          {currentUser?.email}
-                        </div>
-                        {currentUser?.tenantName && (
-                          <div className="text-primary small fw-medium text-truncate">
-                            {currentUser.tenantName}
-                          </div>
-                        )}
-                      </div>
-                      <button className="dropdown-item py-2 px-3 px-sm-4 hover:bg-gray-50 d-flex align-items-center"
-                              onClick={() => setShowUserMenu(false)}>
-                        <i className="bi bi-person me-2 flex-shrink-0"></i>
-                        <span>Profile</span>
-                      </button>
-                      <button className="dropdown-item py-2 px-3 px-sm-4 hover:bg-gray-50 d-flex align-items-center"
-                              onClick={() => setShowUserMenu(false)}>
-                        <i className="bi bi-gear me-2 flex-shrink-0"></i>
-                        <span>Settings</span>
-                      </button>
-                      <hr className="dropdown-divider my-1" />
-                      <button className="dropdown-item py-2 px-3 px-sm-4 text-danger hover:bg-red-50 d-flex align-items-center"
-                              onClick={handleLogout}>
-                        <i className="bi bi-box-arrow-right me-2 flex-shrink-0"></i>
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleCloseMenu}
+                  PaperProps={{
+                    sx: {
+                      minWidth: { xs: 200, sm: 280 },
+                      maxWidth: '95vw',
+                      mt: 1
+                    }
+                  }}
+                >
+                  <Box sx={{ px: { xs: 3, sm: 4 }, py: 3 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }} noWrap>
+                      {getUserDisplayName()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }} noWrap>
+                      {currentUser?.email}
+                    </Typography>
+                    {currentUser?.tenantName && (
+                      <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }} noWrap>
+                        {currentUser.tenantName}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Divider />
+                  <MenuItem onClick={handleCloseMenu}>
+                    <PersonIcon sx={{ mr: 2, fontSize: 20 }} />
+                    Profile
+                  </MenuItem>
+                  <MenuItem onClick={handleCloseMenu}>
+                    <SettingsIcon sx={{ mr: 2, fontSize: 20 }} />
+                    Settings
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                    <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
+                    Sign Out
+                  </MenuItem>
+                </Menu>
+              </>
+            )
           ) : (
-            <button className="btn btn-primary px-3 px-sm-4 py-2" onClick={handleLogin}>
-              <span className="d-none d-sm-inline">Sign In</span>
-              <i className="bi bi-box-arrow-in-right d-sm-none"></i>
-            </button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleLogin}
+              startIcon={<LoginIcon sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+              sx={{ px: { xs: 3, sm: 4 }, py: 2 }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Sign In
+              </Box>
+              <LoginIcon sx={{ display: { xs: 'inline-flex', sm: 'none' }, fontSize: 20 }} />
+            </Button>
           )}
-        </div>
-      </div>
-    </nav>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };

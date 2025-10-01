@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:as-identity-api-develop-eastus2.azurewebsites.net)"
+      "WebFetch(domain:as-identity-api-develop-eastus2.azurewebsites.net)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []
