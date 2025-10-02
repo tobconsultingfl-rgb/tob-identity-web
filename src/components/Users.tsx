@@ -1,0 +1,242 @@
+import React, { useState, useEffect } from 'react';
+import { useIsAuthenticated } from '@azure/msal-react';
+import { useApiService } from '../services';
+import type { UserDto } from '../types';
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Typography,
+  Chip,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import {
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon
+} from '@mui/icons-material';
+
+type Order = 'asc' | 'desc';
+type OrderBy = keyof UserDto;
+
+export const Users: React.FC = () => {
+  const isAuthenticated = useIsAuthenticated();
+  const apiService = useApiService();
+
+  const [users, setUsers] = useState<UserDto[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [order, setOrder] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<OrderBy>('lastName');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadCurrentUserAndUsers();
+    }
+  }, [isAuthenticated]);
+
+  const loadCurrentUserAndUsers = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // First get the current user to get their tenantId
+      const user = await apiService.users.getCurrentUser();
+      setCurrentUser(user);
+
+      // Then get all users for that tenant
+      const usersResponse = await apiService.users.getUsersByTenantId(user.tenantId);
+      setUsers(usersResponse);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load users');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRequestSort = (property: OrderBy) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortedUsers = React.useMemo(() => {
+    const comparator = (a: UserDto, b: UserDto) => {
+      const aValue = a[orderBy];
+      const bValue = b[orderBy];
+
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return order === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      if (aValue < bValue) return order === 'asc' ? -1 : 1;
+      if (aValue > bValue) return order === 'asc' ? 1 : -1;
+      return 0;
+    };
+
+    return [...users].sort(comparator);
+  }, [users, order, orderBy]);
+
+  if (!isAuthenticated) {
+    return (
+      <Alert severity="warning">
+        Please sign in to view users.
+      </Alert>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error">
+        {error}
+      </Alert>
+    );
+  }
+
+  return (
+    <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'firstName'}
+                direction={orderBy === 'firstName' ? order : 'asc'}
+                onClick={() => handleRequestSort('firstName')}
+              >
+                First Name
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'lastName'}
+                direction={orderBy === 'lastName' ? order : 'asc'}
+                onClick={() => handleRequestSort('lastName')}
+              >
+                Last Name
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'email'}
+                direction={orderBy === 'email' ? order : 'asc'}
+                onClick={() => handleRequestSort('email')}
+              >
+                Email
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'username'}
+                direction={orderBy === 'username' ? order : 'asc'}
+                onClick={() => handleRequestSort('username')}
+              >
+                Username
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'phone'}
+                direction={orderBy === 'phone' ? order : 'asc'}
+                onClick={() => handleRequestSort('phone')}
+              >
+                Phone
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'tenantName'}
+                direction={orderBy === 'tenantName' ? order : 'asc'}
+                onClick={() => handleRequestSort('tenantName')}
+              >
+                Tenant
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>Roles</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={orderBy === 'isActive'}
+                direction={orderBy === 'isActive' ? order : 'asc'}
+                onClick={() => handleRequestSort('isActive')}
+              >
+                Status
+              </TableSortLabel>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sortedUsers.length > 0 ? (
+            sortedUsers.map((user) => (
+              <TableRow key={user.userId} hover>
+                <TableCell>{user.firstName || '-'}</TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {user.lastName || '-'}
+                  </Typography>
+                </TableCell>
+                <TableCell>{user.email || '-'}</TableCell>
+                <TableCell>{user.username || '-'}</TableCell>
+                <TableCell>{user.phone || user.mobilePhone || '-'}</TableCell>
+                <TableCell>{user.tenantName || '-'}</TableCell>
+                <TableCell>
+                  {user.roles && user.roles.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {user.roles.map((role) => (
+                        <Chip
+                          key={role.roleId}
+                          label={role.roleName}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={user.isActive ? 'Active' : 'Inactive'}
+                    color={user.isActive ? 'success' : 'error'}
+                    size="small"
+                    icon={user.isActive ? <CheckCircleIcon /> : <CancelIcon />}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={8} align="center">
+                <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                  No users found
+                </Typography>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};

@@ -17,11 +17,11 @@ export class UsersService {
   }
 
   /**
-   * Get users by licensee ID
+   * Get users by Tenant ID
    */
-  async getUsersByTenantId(licenseeId?: string): Promise<ApiResponse<UserDto[]>> {
-    const endpoint = licenseeId
-      ? `/users?licenseeId=${encodeURIComponent(licenseeId)}`
+  async getUsersByTenantId(tenantId?: string): Promise<ApiResponse<UserDto[]>> {
+    const endpoint = tenantId
+      ? `/users?tenantId=${encodeURIComponent(tenantId)}`
       : '/users';
     return this.apiClient.get<UserDto[]>(endpoint);
   }
