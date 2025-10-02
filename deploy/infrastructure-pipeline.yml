@@ -36,5 +36,5 @@ steps:
         az deployment group validate --debug \
           --resource-group '$(ResourceGroupName)' \
           --template-file deploy/main.bicep \
-          --parameters environmentName=${{parameters.environmentType}} \
+          --parameters environmentName=${{ variables.environmentType }} \
                         applicationName='identity-web'        
