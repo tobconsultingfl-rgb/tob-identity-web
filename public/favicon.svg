@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#2C3E50"/>
+
+  <!-- Double chevron/arrow symbol -->
+  <g transform="translate(20, 50)">
+    <!-- First chevron -->
+    <path d="M 0,0 L 15,-15 L 15,-10 L 5,0 L 15,10 L 15,15 Z" fill="#3A7CA5"/>
+
+    <!-- Second chevron -->
+    <path d="M 15,0 L 30,-15 L 30,-10 L 20,0 L 30,10 L 30,15 Z" fill="#5094BE"/>
+  </g>
+
+  <!-- TOB text -->
+  <text x="52" y="65" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#2C3E50">TOB</text>
+</svg>
