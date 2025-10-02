@@ -99,11 +99,11 @@ export const Content: React.FC = () => {
         <Box sx={{ p: { xs: 4, sm: 5 }, textAlign: 'center' }}>
           <LockIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'text.disabled', mb: 3 }} />
           <Typography variant="h5" color="text.secondary" sx={{ mb: 0, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
-            API Demo
+            TOB Identity Management
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Please log in to test the API services.
+              Please log in.
             </Box>
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
               Please log in to continue.
