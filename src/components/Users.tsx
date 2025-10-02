@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useIsAuthenticated } from '@azure/msal-react';
 import { useApiService } from '../services';
 import type { UserDto } from '../types';
+import { AddEditUser } from './AddEditUser';
 import {
   Box,
   Paper,
@@ -15,11 +16,15 @@ import {
   Typography,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  IconButton,
+  Button
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Edit as EditIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
 
 type Order = 'asc' | 'desc';
@@ -35,6 +40,8 @@ export const Users: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<OrderBy>('lastName');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,6 +73,25 @@ export const Users: React.FC = () => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
+  };
+
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditUser = (user: UserDto) => {
+    setSelectedUser(user);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleSaveUser = () => {
+    loadCurrentUserAndUsers();
   };
 
   const sortedUsers = React.useMemo(() => {
@@ -116,7 +142,19 @@ export const Users: React.FC = () => {
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
+    <Box>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-start' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleAddUser}
+        >
+          Add User
+        </Button>
+      </Box>
+
+      <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
       <Table>
         <TableHead>
           <TableRow>
@@ -184,6 +222,7 @@ export const Users: React.FC = () => {
                 Status
               </TableSortLabel>
             </TableCell>
+            <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -224,11 +263,21 @@ export const Users: React.FC = () => {
                     icon={user.isActive ? <CheckCircleIcon /> : <CancelIcon />}
                   />
                 </TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() => handleEditUser(user)}
+                    title="Edit User"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={8} align="center">
+              <TableCell colSpan={9} align="center">
                 <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
                   No users found
                 </Typography>
@@ -238,5 +287,13 @@ export const Users: React.FC = () => {
         </TableBody>
       </Table>
     </TableContainer>
+
+      <AddEditUser
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        user={selectedUser}
+        onSave={handleSaveUser}
+      />
+    </Box>
   );
 };
