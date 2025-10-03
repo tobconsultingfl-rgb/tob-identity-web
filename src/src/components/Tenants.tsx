@@ -15,12 +15,17 @@ import {
   Typography,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  IconButton,
+  Button
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Edit as EditIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
+import { AddEditTenant } from './AddEditTenant';
 
 type Order = 'asc' | 'desc';
 type OrderBy = keyof TenantDto;
@@ -34,12 +39,30 @@ export const Tenants: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<OrderBy>('tenantName');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<TenantDto | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
+      loadCurrentUser();
       loadTenants();
     }
   }, [isAuthenticated]);
+
+  const loadCurrentUser = async () => {
+    try {
+      const userData = await apiService.users.getCurrentUser();
+      setCurrentUser(userData);
+
+      // Check if user is Super Admin
+      const superAdmin = userData.roles?.some((role: any) => role.roleName === 'Super Admin') || false;
+      setIsSuperAdmin(superAdmin);
+    } catch (err: any) {
+      console.error('Failed to load current user:', err);
+    }
+  };
 
   const loadTenants = async () => {
     setLoading(true);
@@ -85,6 +108,25 @@ export const Tenants: React.FC = () => {
     return [...tenants].sort(comparator);
   }, [tenants, order, orderBy]);
 
+  const handleAddTenant = () => {
+    setSelectedTenant(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditTenant = (tenant: TenantDto) => {
+    setSelectedTenant(tenant);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedTenant(null);
+  };
+
+  const handleSaveTenant = () => {
+    loadTenants();
+  };
+
   if (!isAuthenticated) {
     return (
       <Alert severity="warning">
@@ -110,114 +152,145 @@ export const Tenants: React.FC = () => {
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'tenantName'}
-                direction={orderBy === 'tenantName' ? order : 'asc'}
-                onClick={() => handleRequestSort('tenantName')}
-              >
-                Tenant Name
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'tenantCity'}
-                direction={orderBy === 'tenantCity' ? order : 'asc'}
-                onClick={() => handleRequestSort('tenantCity')}
-              >
-                City
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'tenantState'}
-                direction={orderBy === 'tenantState' ? order : 'asc'}
-                onClick={() => handleRequestSort('tenantState')}
-              >
-                State
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'contactFirstName'}
-                direction={orderBy === 'contactFirstName' ? order : 'asc'}
-                onClick={() => handleRequestSort('contactFirstName')}
-              >
-                Contact
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'contactEmail'}
-                direction={orderBy === 'contactEmail' ? order : 'asc'}
-                onClick={() => handleRequestSort('contactEmail')}
-              >
-                Email
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'tenantPhoneNumber'}
-                direction={orderBy === 'tenantPhoneNumber' ? order : 'asc'}
-                onClick={() => handleRequestSort('tenantPhoneNumber')}
-              >
-                Phone
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={orderBy === 'isActive'}
-                direction={orderBy === 'isActive' ? order : 'asc'}
-                onClick={() => handleRequestSort('isActive')}
-              >
-                Status
-              </TableSortLabel>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortedTenants.length > 0 ? (
-            sortedTenants.map((tenant) => (
-              <TableRow key={tenant.tenantId} hover>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {tenant.tenantName || '-'}
+    <Box>
+      {isSuperAdmin && (
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddTenant}
+          >
+            Add Tenant
+          </Button>
+        </Box>
+      )}
+
+      <TableContainer component={Paper} sx={{ boxShadow: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'tenantName'}
+                  direction={orderBy === 'tenantName' ? order : 'asc'}
+                  onClick={() => handleRequestSort('tenantName')}
+                >
+                  Tenant Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'tenantCity'}
+                  direction={orderBy === 'tenantCity' ? order : 'asc'}
+                  onClick={() => handleRequestSort('tenantCity')}
+                >
+                  City
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'tenantState'}
+                  direction={orderBy === 'tenantState' ? order : 'asc'}
+                  onClick={() => handleRequestSort('tenantState')}
+                >
+                  State
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'contactFirstName'}
+                  direction={orderBy === 'contactFirstName' ? order : 'asc'}
+                  onClick={() => handleRequestSort('contactFirstName')}
+                >
+                  Contact
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'contactEmail'}
+                  direction={orderBy === 'contactEmail' ? order : 'asc'}
+                  onClick={() => handleRequestSort('contactEmail')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'tenantPhoneNumber'}
+                  direction={orderBy === 'tenantPhoneNumber' ? order : 'asc'}
+                  onClick={() => handleRequestSort('tenantPhoneNumber')}
+                >
+                  Phone
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'isActive'}
+                  direction={orderBy === 'isActive' ? order : 'asc'}
+                  onClick={() => handleRequestSort('isActive')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedTenants.length > 0 ? (
+              sortedTenants.map((tenant) => (
+                <TableRow key={tenant.tenantId} hover>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {tenant.tenantName || '-'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{tenant.tenantCity || '-'}</TableCell>
+                  <TableCell>{tenant.tenantState || '-'}</TableCell>
+                  <TableCell>
+                    {tenant.contactFirstName || tenant.contactLastName
+                      ? `${tenant.contactFirstName || ''} ${tenant.contactLastName || ''}`.trim()
+                      : '-'}
+                  </TableCell>
+                  <TableCell>{tenant.contactEmail || '-'}</TableCell>
+                  <TableCell>{tenant.tenantPhoneNumber || '-'}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={tenant.isActive ? 'Active' : 'Inactive'}
+                      color={tenant.isActive ? 'success' : 'error'}
+                      size="small"
+                      icon={tenant.isActive ? <CheckCircleIcon /> : <CancelIcon />}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEditTenant(tenant)}
+                      color="primary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} align="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                    No tenants found
                   </Typography>
                 </TableCell>
-                <TableCell>{tenant.tenantCity || '-'}</TableCell>
-                <TableCell>{tenant.tenantState || '-'}</TableCell>
-                <TableCell>
-                  {tenant.contactFirstName || tenant.contactLastName
-                    ? `${tenant.contactFirstName || ''} ${tenant.contactLastName || ''}`.trim()
-                    : '-'}
-                </TableCell>
-                <TableCell>{tenant.contactEmail || '-'}</TableCell>
-                <TableCell>{tenant.tenantPhoneNumber || '-'}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={tenant.isActive ? 'Active' : 'Inactive'}
-                    color={tenant.isActive ? 'success' : 'error'}
-                    size="small"
-                    icon={tenant.isActive ? <CheckCircleIcon /> : <CancelIcon />}
-                  />
-                </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={7} align="center">
-                <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                  No tenants found
-                </Typography>
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <AddEditTenant
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        tenant={selectedTenant}
+        onSave={handleSaveTenant}
+      />
+    </Box>
   );
 };
