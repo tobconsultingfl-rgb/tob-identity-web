@@ -231,7 +231,10 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
           firstName: formData.firstName,
           lastName: formData.lastName,
           mobilePhone: formData.mobilePhone,
-          roles: formData.roleIds.map(roleId => ({ roleId })) as RoleDto[]
+          roles: formData.roleIds.map(roleId => {
+            const role = roles.find(r => r.roleId === roleId);
+            return { roleId, roleName: role?.roleName };
+          }) as RoleDto[]
         };
         await apiService.users.updateUser(user.userId, updateData);
       } else {
@@ -245,7 +248,10 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
           lastName: formData.lastName,
           email: formData.email,
           mobilePhone: formData.mobilePhone,
-          roles: formData.roleIds.map(roleId => ({ roleId })) as RoleDto[]
+          roles: formData.roleIds.map(roleId => {
+            const role = roles.find(r => r.roleId === roleId);
+            return { roleId, roleName: role?.roleName };
+          }) as RoleDto[]
         };
         await apiService.users.createUser(createData);
       }

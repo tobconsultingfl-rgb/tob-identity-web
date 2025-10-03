@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useIsAuthenticated } from '@azure/msal-react';
 import { useApiService } from '../services';
-import type { UserDto } from '../types';
+import type { UserDto, TenantDto } from '../types';
 import { AddEditUser } from './AddEditUser';
 import {
   Box,
@@ -18,7 +18,12 @@ import {
   CircularProgress,
   Alert,
   IconButton,
-  Button
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  type SelectChangeEvent
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -35,6 +40,9 @@ export const Users: React.FC = () => {
   const apiService = useApiService();
 
   const [users, setUsers] = useState<UserDto[]>([]);
+  const [tenants, setTenants] = useState<TenantDto[]>([]);
+  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<Order>('asc');
@@ -55,6 +63,19 @@ export const Users: React.FC = () => {
     try {
       // First get the current user to get their tenantId
       const user = await apiService.users.getCurrentUser();
+
+      // Check if user is Super Admin
+      const superAdmin = user.roles?.some((role: any) => role.roleName === 'Super Admin') || false;
+      setIsSuperAdmin(superAdmin);
+
+      // If Super Admin, load all tenants
+      if (superAdmin) {
+        const tenantsData = await apiService.tenants.getAllTenants();
+        setTenants(tenantsData);
+      }
+
+      // Set the default selected tenant to current user's tenant
+      setSelectedTenantId(user.tenantId);
 
       // Then get all users for that tenant
       const usersResponse = await apiService.users.getUsersByTenantId(user.tenantId);
@@ -90,6 +111,24 @@ export const Users: React.FC = () => {
 
   const handleSaveUser = () => {
     loadCurrentUserAndUsers();
+  };
+
+  const handleTenantChange = async (event: SelectChangeEvent) => {
+    const tenantId = event.target.value;
+    setSelectedTenantId(tenantId);
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const usersResponse = await apiService.users.getUsersByTenantId(tenantId);
+      setUsers(usersResponse);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load users');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sortedUsers = React.useMemo(() => {
@@ -141,7 +180,7 @@ export const Users: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-start' }}>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Button
           variant="contained"
           color="primary"
@@ -150,6 +189,23 @@ export const Users: React.FC = () => {
         >
           Add User
         </Button>
+
+        {isSuperAdmin && (
+          <FormControl sx={{ minWidth: 250 }}>
+            <InputLabel>Tenant</InputLabel>
+            <Select
+              value={selectedTenantId}
+              onChange={handleTenantChange}
+              label="Tenant"
+            >
+              {tenants.map(tenant => (
+                <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                  {tenant.tenantName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
       </Box>
 
       <TableContainer component={Paper} sx={{ boxShadow: 1 }}>

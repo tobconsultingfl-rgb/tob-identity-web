@@ -230,7 +230,7 @@ export const Tenants: React.FC = () => {
                   Status
                 </TableSortLabel>
               </TableCell>
-              <TableCell align="right">Actions</TableCell>
+              {isSuperAdmin && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -259,20 +259,22 @@ export const Tenants: React.FC = () => {
                       icon={tenant.isActive ? <CheckCircleIcon /> : <CancelIcon />}
                     />
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleEditTenant(tenant)}
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </TableCell>
+                  {isSuperAdmin && (
+                    <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditTenant(tenant)}
+                        color="primary"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={isSuperAdmin ? 8 : 7} align="center">
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
                     No tenants found
                   </Typography>
