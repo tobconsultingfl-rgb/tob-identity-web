@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - 'deploy/main.bicep'
+
+variables:
+  - group: rm-tob-variables-group-dev
+  - name: appName
+    value: 'identity-web'
+  - name: staticWebAppName
+    value: 'swa-identity-web-prod'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: NodeTool@0
+    displayName: 'Install Node.js'
+    inputs:
+      versionSpec: '18.x'
+
+  - task: Npm@1
+    displayName: 'Install dependencies'
+    inputs:
+      command: 'install'
+      workingDir: 'src'
+
+  - task: Npm@1
+    displayName: 'Build application'
+    inputs:
+      command: 'custom'
+      customCommand: 'run build'
+      workingDir: 'src'
+
+  - task: AzureCLI@2
+    displayName: 'Deploy to Azure Static Web App'
+    inputs:
+      azureSubscription: '$(ARMServiceConnection)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        # Get the deployment token for the Static Web App
+        DEPLOYMENT_TOKEN=$(az staticwebapp secrets list \
+          --name $(staticWebAppName) \
+          --resource-group '$(ResourceGroupName)' \
+          --query "properties.apiKey" -o tsv)
+
+        # Install Azure Static Web Apps CLI
+        npm install -g @azure/static-web-apps-cli
+
+        # Deploy to Static Web App
+        swa deploy ./src/dist \
+          --deployment-token $DEPLOYMENT_TOKEN \
+          --app-name $(staticWebAppName) \
+          --env production
