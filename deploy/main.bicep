@@ -12,7 +12,6 @@ var staticWebAppName = 'swa-${applicationName}-${environmentName}'
 
 resource staticWebApp 'Microsoft.Web/staticSites@2023-01-01' = {
   name: staticWebAppName
-  staticSiteName: staticWebAppName
   location: location
   sku: {
     name: 'Free'
