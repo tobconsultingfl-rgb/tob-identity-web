@@ -35,7 +35,6 @@ export const Users: React.FC = () => {
   const apiService = useApiService();
 
   const [users, setUsers] = useState<UserDto[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<Order>('asc');
@@ -56,7 +55,6 @@ export const Users: React.FC = () => {
     try {
       // First get the current user to get their tenantId
       const user = await apiService.users.getCurrentUser();
-      setCurrentUser(user);
 
       // Then get all users for that tenant
       const usersResponse = await apiService.users.getUsersByTenantId(user.tenantId);

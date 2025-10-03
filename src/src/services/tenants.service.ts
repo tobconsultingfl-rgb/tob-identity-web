@@ -7,7 +7,11 @@ import type {
 } from '../types';
 
 export class TenantsService {
-  constructor(private apiClient: BaseApiClient) {}
+  private apiClient: BaseApiClient;
+
+  constructor(apiClient: BaseApiClient) {
+    this.apiClient = apiClient;
+  }
 
   /**
    * Get all tenants

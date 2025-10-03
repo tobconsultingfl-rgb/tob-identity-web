@@ -134,12 +134,17 @@ export class BaseApiClient {
 }
 
 export class ApiClientError extends Error {
+  public readonly apiError: ApiError;
+  public readonly statusCode: number;
+
   constructor(
-    public readonly apiError: ApiError,
-    public readonly statusCode: number
+    apiError: ApiError,
+    statusCode: number
   ) {
     super(apiError.detail || apiError.title || `API Error ${statusCode}`);
     this.name = 'ApiClientError';
+    this.apiError = apiError;
+    this.statusCode = statusCode;
   }
 }
 

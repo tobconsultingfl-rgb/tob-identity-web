@@ -8,12 +8,14 @@ import { UserRolesService } from './user-roles.service';
  * Main API service that combines all individual services
  */
 export class ApiService {
+  private apiClient: BaseApiClient;
   public readonly users: UsersService;
   public readonly roles: RolesService;
   public readonly tenants: TenantsService;
   public readonly userRoles: UserRolesService;
 
-  constructor(private apiClient: BaseApiClient) {
+  constructor(apiClient: BaseApiClient) {
+    this.apiClient = apiClient;
     this.users = new UsersService(apiClient);
     this.roles = new RolesService(apiClient);
     this.tenants = new TenantsService(apiClient);

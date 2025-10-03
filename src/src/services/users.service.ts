@@ -7,7 +7,11 @@ import type {
 } from '../types';
 
 export class UsersService {
-  constructor(private apiClient: BaseApiClient) {}
+  private apiClient: BaseApiClient;
+
+  constructor(apiClient: BaseApiClient) {
+    this.apiClient = apiClient;
+  }
 
   /**
    * Get the currently logged-in user

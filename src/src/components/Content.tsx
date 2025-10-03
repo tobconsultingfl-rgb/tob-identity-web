@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useIsAuthenticated } from '@azure/msal-react';
-import { useApiService } from '../services';
-import type { UserDto, RoleDto, TenantDto } from '../types';
 import { Tenants } from './Tenants';
 import { Users } from './Users';
 import { Roles } from './Roles';
@@ -9,88 +7,26 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   Alert,
   CircularProgress,
-  Grid,
-  Card,
-  CardHeader,
   CardContent,
-  Chip,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
   Tabs,
   Tab
 } from '@mui/material';
 import {
-  Refresh as RefreshIcon,
-  Search as SearchIcon,
-  Person as PersonIcon,
-  Security as SecurityIcon,
-  Business as BusinessIcon,
   Lock as LockIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  Info as InfoIcon,
-  LocationOn as LocationIcon,
   Api as ApiIcon
 } from '@mui/icons-material';
 
 export const Content: React.FC = () => {
   const isAuthenticated = useIsAuthenticated();
-  const apiService = useApiService();
 
-  const [currentUser, setCurrentUser] = useState<UserDto | null>(null);
-  const [roles, setRoles] = useState<RoleDto[]>([]);
-  const [tenants, setTenants] = useState<TenantDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-
-  const [tabValue, setTabValue] = useState(0)
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
+  const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)
-  }
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated]);
-
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Load current user, roles, and tenants in parallel
-      const [userResponse, rolesResponse, tenantsResponse] = await Promise.all([
-        apiService.users.getCurrentUser(),
-        apiService.roles.getAllRoles(),
-        apiService.tenants.getAllTenants()
-      ]);
-
-      setCurrentUser(userResponse);
-      setRoles(rolesResponse);
-      setTenants(tenantsResponse);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
-      console.error('API Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkUsername = async () => {
-    try {
-      const exists = await apiService.users.checkUsernameExists('testuser');
-      alert(`Username exists: ${exists}`);
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
-    }
+    setTabValue(newValue);
   };
 
   if (!isAuthenticated) {

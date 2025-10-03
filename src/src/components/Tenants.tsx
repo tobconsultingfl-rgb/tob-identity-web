@@ -41,7 +41,6 @@ export const Tenants: React.FC = () => {
   const [orderBy, setOrderBy] = useState<OrderBy>('tenantName');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<TenantDto | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
@@ -54,7 +53,6 @@ export const Tenants: React.FC = () => {
   const loadCurrentUser = async () => {
     try {
       const userData = await apiService.users.getCurrentUser();
-      setCurrentUser(userData);
 
       // Check if user is Super Admin
       const superAdmin = userData.roles?.some((role: any) => role.roleName === 'Super Admin') || false;

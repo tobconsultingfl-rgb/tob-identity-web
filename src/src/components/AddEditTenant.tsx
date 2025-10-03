@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApiService } from '../services';
-import type { TenantDto, UpdateTenantRequest, State } from '../types';
+import type { TenantDto, UpdateTenantRequest, State as StateType } from '../types';
+import { State } from '../types';
 import {
   Dialog,
   DialogTitle,
@@ -32,7 +33,7 @@ interface FormData {
   tenantAddress1: string;
   tenantAddress2: string;
   tenantCity: string;
-  tenantState: State;
+  tenantState: StateType;
   tenantZip: string;
   tenantPhoneNumber: string;
   tenantFax: string;
@@ -55,12 +56,12 @@ interface FormErrors {
   contactEmail?: string;
 }
 
-const US_STATES: State[] = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+const US_STATES: StateType[] = [
+  State.AL, State.AK, State.AZ, State.AR, State.CA, State.CO, State.CT, State.DE, State.FL, State.GA,
+  State.HI, State.ID, State.IL, State.IN, State.IA, State.KS, State.KY, State.LA, State.ME, State.MD,
+  State.MA, State.MI, State.MN, State.MS, State.MO, State.MT, State.NE, State.NV, State.NH, State.NJ,
+  State.NM, State.NY, State.NC, State.ND, State.OH, State.OK, State.OR, State.PA, State.RI, State.SC,
+  State.SD, State.TN, State.TX, State.UT, State.VT, State.VA, State.WA, State.WV, State.WI, State.WY
 ];
 
 export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, tenant, onSave }) => {
@@ -72,7 +73,7 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
     tenantAddress1: '',
     tenantAddress2: '',
     tenantCity: '',
-    tenantState: 'AL',
+    tenantState: State.AL,
     tenantZip: '',
     tenantPhoneNumber: '',
     tenantFax: '',
@@ -102,7 +103,7 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
       tenantAddress1: tenantData.tenantAddress1 || '',
       tenantAddress2: tenantData.tenantAddress2 || '',
       tenantCity: tenantData.tenantCity || '',
-      tenantState: tenantData.tenantState || 'AL',
+      tenantState: tenantData.tenantState || State.AL,
       tenantZip: tenantData.tenantZip || '',
       tenantPhoneNumber: tenantData.tenantPhoneNumber || '',
       tenantFax: tenantData.tenantFax || '',
@@ -119,7 +120,7 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
       tenantAddress1: '',
       tenantAddress2: '',
       tenantCity: '',
-      tenantState: 'AL',
+      tenantState: State.AL,
       tenantZip: '',
       tenantPhoneNumber: '',
       tenantFax: '',
@@ -143,7 +144,7 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
 
   const handleSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name as string]: value as State }));
+    setFormData(prev => ({ ...prev, [name as string]: value as StateType }));
     // Clear error for this field
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));

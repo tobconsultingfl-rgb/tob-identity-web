@@ -13,8 +13,7 @@ import {
   MenuItem,
   Typography,
   Divider,
-  CircularProgress,
-  IconButton
+  CircularProgress
 } from '@mui/material';
 import {
   KeyboardArrowDown as ArrowDownIcon,
