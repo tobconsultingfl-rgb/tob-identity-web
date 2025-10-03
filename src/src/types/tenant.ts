@@ -35,7 +35,7 @@ export interface CreateTenantRequest {
   contactLastName: string;
   contactMobilePhone: string;
   contactEmail: string;
-  password?: string;
+  password: string;
 }
 
 export interface UpdateTenantRequest {

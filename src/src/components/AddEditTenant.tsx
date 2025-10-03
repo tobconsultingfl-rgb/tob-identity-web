@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApiService } from '../services';
-import type { TenantDto, UpdateTenantRequest, State as StateType } from '../types';
+import type { TenantDto, CreateTenantRequest, UpdateTenantRequest, State as StateType } from '../types';
 import { State } from '../types';
 import {
   Dialog,
@@ -41,6 +41,7 @@ interface FormData {
   contactLastName: string;
   contactMobilePhone: string;
   contactEmail: string;
+  password: string;
 }
 
 interface FormErrors {
@@ -54,6 +55,7 @@ interface FormErrors {
   contactLastName?: string;
   contactMobilePhone?: string;
   contactEmail?: string;
+  password?: string;
 }
 
 const US_STATES: StateType[] = [
@@ -80,7 +82,8 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
     contactFirstName: '',
     contactLastName: '',
     contactMobilePhone: '',
-    contactEmail: ''
+    contactEmail: '',
+    password: ''
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -110,7 +113,8 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
       contactFirstName: tenantData.contactFirstName || '',
       contactLastName: tenantData.contactLastName || '',
       contactMobilePhone: tenantData.contactPhoneNumber || '',
-      contactEmail: tenantData.contactEmail || ''
+      contactEmail: tenantData.contactEmail || '',
+      password: ''
     });
   };
 
@@ -127,7 +131,8 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
       contactFirstName: '',
       contactLastName: '',
       contactMobilePhone: '',
-      contactEmail: ''
+      contactEmail: '',
+      password: ''
     });
     setErrors({});
     setSubmitError(null);
@@ -198,6 +203,14 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
       newErrors.contactEmail = 'Invalid email format';
     }
 
+    if (!isEditMode) {
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -228,6 +241,24 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
           contactEmail: formData.contactEmail
         };
         await apiService.tenants.updateTenant(tenant.tenantId, updateData);
+      } else {
+        // Create new tenant
+        const createData: CreateTenantRequest = {
+          tenantName: formData.tenantName,
+          tenantAddress1: formData.tenantAddress1,
+          tenantAddress2: formData.tenantAddress2 || undefined,
+          tenantCity: formData.tenantCity,
+          tenantState: formData.tenantState,
+          tenantZip: formData.tenantZip,
+          tenantPhoneNumber: formData.tenantPhoneNumber,
+          tenantFax: formData.tenantFax || undefined,
+          contactFirstName: formData.contactFirstName,
+          contactLastName: formData.contactLastName,
+          contactMobilePhone: formData.contactMobilePhone,
+          contactEmail: formData.contactEmail,
+          password: formData.password
+        };
+        await apiService.tenants.createTenant(createData);
       }
 
       onSave();
@@ -405,6 +436,21 @@ export const AddEditTenant: React.FC<AddEditTenantProps> = ({ open, onClose, ten
             helperText={errors.contactEmail}
             required
           />
+
+          {!isEditMode && (
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={!!errors.password}
+              helperText={errors.password}
+              required
+            />
+          )}
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
