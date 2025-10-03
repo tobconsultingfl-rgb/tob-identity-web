@@ -28,6 +28,15 @@ steps:
       command: 'install'
       workingDir: 'src'
 
+  - task: Bash@3
+    displayName: 'Update redirectUri for production'
+    inputs:
+      targetType: 'inline'
+      script: |
+        sed -i "s|http://localhost:5173|https://happy-bush-04d11850f.2.azurestaticapps.net|g" src/src/authConfig.ts
+        echo "Updated redirectUri in authConfig.ts"
+        grep "redirectUri" src/src/authConfig.ts
+
   - task: Npm@1
     displayName: 'Build application'
     inputs:

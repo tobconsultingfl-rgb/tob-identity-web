@@ -51,16 +51,12 @@ export const TopNav: React.FC = () => {
   };
 
   const handleLogin = () => {
-    instance.loginPopup(loginRequest)
+    instance.loginRedirect(loginRequest)
       .catch(error => console.log(error));
   };
 
   const handleLogout = () => {
-    instance.logoutPopup()
-      .then(() => {
-        setCurrentUser(null);
-        handleCloseMenu();
-      })
+    instance.logoutRedirect()
       .catch(error => console.log(error));
   };
 
