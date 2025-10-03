@@ -37,4 +37,18 @@ steps:
           --resource-group '$(ResourceGroupName)' \
           --template-file deploy/main.bicep \
           --parameters environmentName=${{ variables.environmentType }} \
-                        applicationName='identity-web'        
+                        applicationName='identity-web'
+
+  - task: AzureCLI@2
+    name: DeployInfrastructure
+    displayName: 'Deploy infrastructure to Azure'
+    inputs:
+      azureSubscription: '$(ARMServiceConnection)'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az deployment group create \
+          --resource-group '$(ResourceGroupName)' \
+          --template-file deploy/main.bicep \
+          --parameters environmentName=${{ variables.environmentType }} \
+                        applicationName='identity-web'
