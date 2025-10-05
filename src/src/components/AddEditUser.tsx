@@ -35,7 +35,6 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
-  username: string;
   password: string;
   mobilePhone: string;
   roleIds: string[];
@@ -46,7 +45,6 @@ interface FormErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
-  username?: string;
   password?: string;
   mobilePhone?: string;
 }
@@ -61,7 +59,6 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
     firstName: '',
     lastName: '',
     email: '',
-    username: '',
     password: '',
     mobilePhone: '',
     roleIds: []
@@ -126,7 +123,6 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
       firstName: userData.firstName || '',
       lastName: userData.lastName || '',
       email: userData.email || '',
-      username: userData.username || '',
       password: '',
       mobilePhone: userData.mobilePhone || '',
       roleIds: userData.roles?.map(r => r.roleId || '').filter(Boolean) || []
@@ -140,7 +136,6 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
       firstName: '',
       lastName: '',
       email: '',
-      username: '',
       password: '',
       mobilePhone: '',
       roleIds: []
@@ -172,6 +167,20 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
     setFormData(prev => ({ ...prev, roleIds: typeof value === 'string' ? value.split(',') : value }));
   };
 
+  const handleEmailBlur = async () => {
+    // Only check if not in edit mode and email is valid format
+    if (!isEditMode && formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      try {
+        const exists = await apiService.users.checkUsernameExists(formData.email);
+        if (exists) {
+          setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
+        }
+      } catch (err) {
+        console.error('Failed to check username:', err);
+      }
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -190,10 +199,6 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
     }
 
     if (!isEditMode) {
-      if (!formData.username.trim()) {
-        newErrors.username = 'Username is required';
-      }
-
       if (!formData.password) {
         newErrors.password = 'Password is required';
       } else if (formData.password.length < 6) {
@@ -211,6 +216,27 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const isFormValid = (): boolean => {
+    // Check if there are any actual error messages (not undefined)
+    const hasErrors = Object.values(errors).some(error => error !== undefined && error !== '');
+
+    const baseValidation = (
+      formData.firstName.trim() !== '' &&
+      formData.lastName.trim() !== '' &&
+      formData.email.trim() !== '' &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
+      formData.mobilePhone.trim() !== '' &&
+      formData.tenantId !== '' &&
+      !hasErrors
+    );
+
+    if (isEditMode) {
+      return baseValidation;
+    } else {
+      return baseValidation && formData.password !== '' && formData.password.length >= 6;
+    }
   };
 
   const handleSubmit = async () => {
@@ -242,7 +268,7 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
         const createData: CreateUserRequest = {
           tenantId: formData.tenantId,
           managerId: formData.managerId || null,
-          userName: formData.username,
+          userName: formData.email,
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -351,6 +377,7 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
               type="email"
               value={formData.email}
               onChange={handleChange}
+              onBlur={handleEmailBlur}
               error={!!errors.email}
               helperText={errors.email}
               required
@@ -358,32 +385,18 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
             />
 
             {!isEditMode && (
-              <>
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  error={!!errors.username}
-                  helperText={errors.username}
-                  required
-                />
-
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  error={!!errors.password}
-                  helperText={errors.password}
-                  required
-                />
-              </>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                error={!!errors.password}
+                helperText={errors.password}
+                required
+              />
             )}
 
             <TextField
@@ -433,7 +446,7 @@ export const AddEditUser: React.FC<AddEditUserProps> = ({ open, onClose, user, o
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading || loadingData}
+          disabled={loading || loadingData || !isFormValid()}
           startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
         >
           {loading ? 'Saving...' : 'Save'}

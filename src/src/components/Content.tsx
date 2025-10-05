@@ -3,6 +3,7 @@ import { useIsAuthenticated } from '@azure/msal-react';
 import { Tenants } from './Tenants';
 import { Users } from './Users';
 import { Roles } from './Roles';
+import { Register } from './Register';
 import {
   Box,
   Paper,
@@ -11,7 +12,8 @@ import {
   CircularProgress,
   CardContent,
   Tabs,
-  Tab
+  Tab,
+  Link
 } from '@mui/material';
 import {
   Lock as LockIcon,
@@ -24,29 +26,66 @@ export const Content: React.FC = () => {
   const [loading] = useState(false);
   const [error] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const [registerOpen, setRegisterOpen] = useState(false);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
+  const handleOpenRegister = () => {
+    setRegisterOpen(true);
+  };
+
+  const handleCloseRegister = () => {
+    setRegisterOpen(false);
+  };
+
+  const handleRegisterSuccess = () => {
+    setRegisterOpen(false);
+  };
+
   if (!isAuthenticated) {
     return (
-      <Paper sx={{ borderRadius: 2, boxShadow: 1 }}>
-        <Box sx={{ p: { xs: 4, sm: 5 }, textAlign: 'center' }}>
-          <LockIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'text.disabled', mb: 3 }} />
-          <Typography variant="h5" color="text.secondary" sx={{ mb: 0, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
-            TOB Identity Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Please log in.
-            </Box>
-            <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-              Please log in to continue.
-            </Box>
-          </Typography>
-        </Box>
-      </Paper>
+      <>
+        <Paper sx={{ borderRadius: 2, boxShadow: 1 }}>
+          <Box sx={{ p: { xs: 4, sm: 5 }, textAlign: 'center' }}>
+            <LockIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'text.disabled', mb: 3 }} />
+            <Typography variant="h5" color="text.secondary" sx={{ mb: 0, fontSize: { xs: '1.125rem', sm: '1.5rem' } }}>
+              TOB Identity Management
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={handleOpenRegister}
+                  sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                >
+                  Create Account
+                </Link>
+                {' or log in.'}
+              </Box>
+              <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={handleOpenRegister}
+                  sx={{ cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                >
+                  Create Account
+                </Link>
+                {' or log in to continue.'}
+              </Box>
+            </Typography>
+          </Box>
+        </Paper>
+
+        <Register
+          open={registerOpen}
+          onClose={handleCloseRegister}
+          onSuccess={handleRegisterSuccess}
+        />
+      </>
     );
   }
 

@@ -17,7 +17,7 @@ export class TenantsService {
    * Get all tenants
    */
   async getAllTenants(): Promise<ApiResponse<TenantDto[]>> {
-    return this.apiClient.get<TenantDto[]>('/tenants');
+    return this.apiClient.get<TenantDto[]>('/tenants', false);
   }
 
   /**

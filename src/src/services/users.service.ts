@@ -41,7 +41,7 @@ export class UsersService {
    * Create a new user
    */
   async createUser(user: CreateUserRequest): Promise<ApiResponse<UserDto>> {
-    return this.apiClient.post<UserDto>('/users', user);
+    return this.apiClient.post<UserDto>('/users', user, false);
   }
 
   /**
@@ -62,6 +62,6 @@ export class UsersService {
    * Check if a username exists
    */
   async checkUsernameExists(userName: string): Promise<ApiResponse<boolean>> {
-    return this.apiClient.get<boolean>(`/users/usernameexists/${encodeURIComponent(userName)}`);
+    return this.apiClient.get<boolean>(`/users/usernameexists/${encodeURIComponent(userName)}`, false);
   }
 }

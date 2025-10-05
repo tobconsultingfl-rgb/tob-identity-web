@@ -15,7 +15,7 @@ export class RolesService {
    * Get all roles
    */
   async getAllRoles(): Promise<ApiResponse<RoleDto[]>> {
-    return this.apiClient.get<RoleDto[]>('/roles');
+    return this.apiClient.get<RoleDto[]>('/roles', false);
   }
 
   /**
